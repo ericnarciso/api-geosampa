@@ -1,8 +1,8 @@
 {
-  "name": "api-anything",
+  "name": "api-geosampa",
   "version": "0.4.0",
-  "mcpName": "io.github.goodnight000/api-anything",
-  "description": "Learn reusable operations from a website's browser traffic and call them from a CLI, library or MCP server.",
+  "mcpName": "io.github.ericnarciso/api-geosampa",
+  "description": "API não oficial do GeoSampa (São Paulo) para consulta de lotes/SQL, zoneamento LPUOS, bens tombados e áreas contaminadas via WFS.",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -49,17 +49,17 @@
     "prepublishOnly": "npm run check && npm run lint"
   },
   "keywords": [
-    "api",
-    "reverse-engineering",
+    "geosampa",
+    "sao-paulo",
+    "wfs",
+    "iptu",
+    "urbanismo",
     "mcp",
-    "agents",
-    "scraping",
-    "self-healing",
-    "claude-code"
+    "api"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/goodnight000/api-anything.git"
+    "url": "git+https://github.com/ericnarciso/api-geosampa.git"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
@@ -74,8 +74,8 @@
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
-  "homepage": "https://api-anything-registry.forth-site.workers.dev",
+  "homepage": "https://github.com/ericnarciso/api-geosampa#readme",
   "bugs": {
-    "url": "https://github.com/goodnight000/api-anything/issues"
+    "url": "https://github.com/ericnarciso/api-geosampa/issues"
   }
 }
