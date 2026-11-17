@@ -1,0 +1,849 @@
+{
+  "name": "geosampa",
+  "displayName": "GeoSampa (São Paulo)",
+  "baseUrl": "https://geosampa.prefeitura.sp.gov.br",
+  "description": "Consulta dados cadastrais, fiscais e urbanísticos oficiais da cidade de São Paulo (IPTU/SQL, lotes, zoneamento LPUOS, patrimônio tombado e áreas contaminadas) via GeoSampa WFS.",
+  "operations": [
+    {
+      "name": "getLoteBySql",
+      "description": "Busca um lote fiscal paulistano pelo número do SQL (Setor, Quadra e Lote do IPTU).",
+      "request": {
+        "method": "GET",
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:lote_cidadao&outputFormat=application/json&CQL_FILTER=cd_setor_fiscal%3D%27{setor}%27%20and%20cd_quadra_fiscal%3D%27{quadra}%27%20and%20cd_lote%3D%27{lote}%27",
+        "headers": {
+          "accept": "application/json, text/plain, */*",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+      },
+      "slots": [
+        {
+          "param": "setor",
+          "at": [
+            "query:CQL_FILTER"
+          ],
+          "template": "cd_setor_fiscal='{setor}' and cd_quadra_fiscal='{quadra}' and cd_lote='{lote}'"
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:lote_cidadao&outputFormat=application/json&CQL_FILTER=cd_setor_fiscal%3D%27{setor}%27%20and%20cd_quadra_fiscal%3D%27{quadra}%27%20and%20cd_lote%3D%27{lote}%27"
+      },
+      "match": {
+        "method": "GET",
+        "host": "wfs.geosampa.prefeitura.sp.gov.br",
+        "path": "/geoserver/geoportal/wfs"
+      },
+      "response": {
+        "format": "json",
+        "extract": "features",
+        "pick": [
+          "id",
+          "setor=properties.cd_setor_fiscal",
+          "quadra=properties.cd_quadra_fiscal",
+          "lote=properties.cd_lote",
+          "digito=properties.cd_digito_sql",
+          "logradouro=properties.nm_logradouro_completo",
+          "numero=properties.cd_numero_porta",
+          "complemento=properties.tx_complemento_endereco",
+          "uso=properties.dc_tipo_uso_imovel",
+          "areaTerreno=properties.qt_area_terreno",
+          "areaConstruida=properties.qt_area_construida",
+          "situacao=properties.tx_situ_lote",
+          "coordinates=geometry.coordinates",
+          "geometryType=geometry.type"
+        ]
+      },
+      "params": [
+        {
+          "name": "setor",
+          "type": "string",
+          "required": true,
+          "description": "Código do setor fiscal com 3 dígitos (ex: 009).",
+          "example": "009"
+        },
+        {
+          "name": "quadra",
+          "type": "string",
+          "required": true,
+          "description": "Código da quadra fiscal com 3 dígitos (ex: 048).",
+          "example": "048"
+        },
+        {
+          "name": "lote",
+          "type": "string",
+          "required": true,
+          "description": "Código do lote fiscal com 4 dígitos (ex: 0138).",
+          "example": "0138"
+        }
+      ],
+      "readOnly": true,
+      "minTier": 1,
+      "learnedLoggedIn": false,
+      "checks": [
+        {
+          "args": {
+            "setor": "009",
+            "quadra": "048",
+            "lote": "0138"
+          },
+          "expect": "result",
+          "purpose": "Lote público conhecido na Av. Paulista 1000 retorna dados fiscais e geometria."
+        },
+        {
+          "args": {
+            "setor": "000",
+            "quadra": "000",
+            "lote": "0000"
+          },
+          "expect": "empty",
+          "purpose": "SQL inexistente retorna lista vazia."
+        }
+      ]
+    },
+    {
+      "name": "searchLoteByEndereco",
+      "description": "Busca lotes fiscais pelo nome do logradouro e número de porta em São Paulo.",
+      "request": {
+        "method": "GET",
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:lote_cidadao&outputFormat=application/json&maxFeatures=10&CQL_FILTER=nm_logradouro_completo%20LIKE%20%27%25{logradouro}%25%27%20and%20cd_numero_porta%3D%27{numero}%27",
+        "headers": {
+          "accept": "application/json, text/plain, */*",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+      },
+      "slots": [
+        {
+          "param": "logradouro",
+          "at": [
+            "query:CQL_FILTER"
+          ],
+          "template": "nm_logradouro_completo LIKE '%{logradouro}%' and cd_numero_porta='{numero}'"
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:lote_cidadao&outputFormat=application/json&maxFeatures=10&CQL_FILTER=nm_logradouro_completo%20LIKE%20%27%25{logradouro}%25%27%20and%20cd_numero_porta%3D%27{numero}%27"
+      },
+      "match": {
+        "method": "GET",
+        "host": "wfs.geosampa.prefeitura.sp.gov.br",
+        "path": "/geoserver/geoportal/wfs"
+      },
+      "response": {
+        "format": "json",
+        "extract": "features",
+        "pick": [
+          "id",
+          "setor=properties.cd_setor_fiscal",
+          "quadra=properties.cd_quadra_fiscal",
+          "lote=properties.cd_lote",
+          "digito=properties.cd_digito_sql",
+          "logradouro=properties.nm_logradouro_completo",
+          "numero=properties.cd_numero_porta",
+          "complemento=properties.tx_complemento_endereco",
+          "uso=properties.dc_tipo_uso_imovel",
+          "areaTerreno=properties.qt_area_terreno",
+          "areaConstruida=properties.qt_area_construida",
+          "situacao=properties.tx_situ_lote",
+          "coordinates=geometry.coordinates",
+          "geometryType=geometry.type"
+        ]
+      },
+      "params": [
+        {
+          "name": "logradouro",
+          "type": "string",
+          "required": true,
+          "description": "Parte do nome ou denominação do logradouro (ex: PAULISTA).",
+          "example": "PAULISTA"
+        },
+        {
+          "name": "numero",
+          "type": "string",
+          "required": true,
+          "description": "Número de porta do imóvel (ex: 1000).",
+          "example": "1000"
+        }
+      ],
+      "readOnly": true,
+      "minTier": 1,
+      "learnedLoggedIn": false,
+      "checks": [
+        {
+          "args": {
+            "logradouro": "PAULISTA",
+            "numero": "1000"
+          },
+          "expect": "result",
+          "purpose": "Busca por endereço Av. Paulista 1000 retorna o lote correspondente."
+        },
+        {
+          "args": {
+            "logradouro": "INEXISTENTE",
+            "numero": "99999"
+          },
+          "expect": "empty",
+          "purpose": "Logradouro fictício retorna lista vazia."
+        }
+      ]
+    },
+    {
+      "name": "getQuadraLotes",
+      "description": "Lista todos os lotes de uma quadra fiscal (para estudos de remembramento e entorno imediato).",
+      "request": {
+        "method": "GET",
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:lote_cidadao&outputFormat=application/json&CQL_FILTER=cd_setor_fiscal%3D%27{setor}%27%20and%20cd_quadra_fiscal%3D%27{quadra}%27",
+        "headers": {
+          "accept": "application/json, text/plain, */*",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+      },
+      "slots": [
+        {
+          "param": "setor",
+          "at": [
+            "query:CQL_FILTER"
+          ],
+          "template": "cd_setor_fiscal='{setor}' and cd_quadra_fiscal='{quadra}'"
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:lote_cidadao&outputFormat=application/json&CQL_FILTER=cd_setor_fiscal%3D%27{setor}%27%20and%20cd_quadra_fiscal%3D%27{quadra}%27"
+      },
+      "match": {
+        "method": "GET",
+        "host": "wfs.geosampa.prefeitura.sp.gov.br",
+        "path": "/geoserver/geoportal/wfs"
+      },
+      "response": {
+        "format": "json",
+        "extract": "features",
+        "pick": [
+          "id",
+          "lote=properties.cd_lote",
+          "digito=properties.cd_digito_sql",
+          "numero=properties.cd_numero_porta",
+          "uso=properties.dc_tipo_uso_imovel",
+          "areaTerreno=properties.qt_area_terreno",
+          "areaConstruida=properties.qt_area_construida",
+          "situacao=properties.tx_situ_lote",
+          "coordinates=geometry.coordinates"
+        ]
+      },
+      "params": [
+        {
+          "name": "setor",
+          "type": "string",
+          "required": true,
+          "description": "Código do setor fiscal com 3 dígitos (ex: 009).",
+          "example": "009"
+        },
+        {
+          "name": "quadra",
+          "type": "string",
+          "required": true,
+          "description": "Código da quadra fiscal com 3 dígitos (ex: 048).",
+          "example": "048"
+        }
+      ],
+      "readOnly": true,
+      "minTier": 1,
+      "learnedLoggedIn": false,
+      "checks": [
+        {
+          "args": {
+            "setor": "009",
+            "quadra": "048"
+          },
+          "expect": "result",
+          "purpose": "Quadra fiscal conhecida na região da Paulista retorna seus lotes."
+        },
+        {
+          "args": {
+            "setor": "000",
+            "quadra": "000"
+          },
+          "expect": "empty",
+          "purpose": "Quadra inexistente retorna vazio."
+        }
+      ]
+    },
+    {
+      "name": "getZoneamento",
+      "description": "Consulta o zoneamento (LPUOS - Lei 16.402/16) incidente sobre o bounding box (SIRGAS 2000 / EPSG:31983).",
+      "request": {
+        "method": "GET",
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:zoneamento_2016_map1&outputFormat=application/json&bbox=%7Bminx%7D%2C%7Bminy%7D%2C%7Bmaxx%7D%2C%7Bmaxy%7D",
+        "headers": {
+          "accept": "application/json, text/plain, */*",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+      },
+      "slots": [
+        {
+          "param": "minx",
+          "at": [
+            "query:bbox"
+          ],
+          "template": "{minx},{miny},{maxx},{maxy}"
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:zoneamento_2016_map1&outputFormat=application/json&bbox=%7Bminx%7D%2C%7Bminy%7D%2C%7Bmaxx%7D%2C%7Bmaxy%7D"
+      },
+      "match": {
+        "method": "GET",
+        "host": "wfs.geosampa.prefeitura.sp.gov.br",
+        "path": "/geoserver/geoportal/wfs"
+      },
+      "response": {
+        "format": "json",
+        "extract": "features",
+        "pick": [
+          "id",
+          "zona=properties.tx_zoneamento_perimetro",
+          "codigoZona=properties.cd_zoneamento_perimetro",
+          "subprefeitura=properties.cd_subprefeitura_perimetro",
+          "lei=properties.cd_numero_legislacao_zoneamento",
+          "anoLei=properties.an_legislacao_zoneamento",
+          "observacao=properties.tx_observacao_perimetro"
+        ]
+      },
+      "params": [
+        {
+          "name": "minx",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada X mínima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "331390"
+        },
+        {
+          "name": "miny",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada Y mínima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "7392960"
+        },
+        {
+          "name": "maxx",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada X máxima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "331490"
+        },
+        {
+          "name": "maxy",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada Y máxima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "7393070"
+        }
+      ],
+      "readOnly": true,
+      "minTier": 1,
+      "learnedLoggedIn": false,
+      "checks": [
+        {
+          "args": {
+            "minx": "331390",
+            "miny": "7392960",
+            "maxx": "331490",
+            "maxy": "7393070"
+          },
+          "expect": "result",
+          "purpose": "Coordenadas da Av. Paulista retornam zona ZEU."
+        },
+        {
+          "args": {
+            "minx": "100000",
+            "miny": "1000000",
+            "maxx": "100010",
+            "maxy": "1000010"
+          },
+          "expect": "empty",
+          "purpose": "BBOX fora do município de São Paulo retorna vazio."
+        }
+      ]
+    },
+    {
+      "name": "getBensTombados",
+      "description": "Verifica se há bens tombados ou ZEPEC no SQL do lote (patrimônio histórico municipal, estadual ou federal).",
+      "request": {
+        "method": "GET",
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:patrimonio_cultural_bem_tombado&outputFormat=application/json&CQL_FILTER=cd_setor_fiscal%3D%27{setor}%27%20and%20cd_quadra_fiscal%3D%27{quadra}%27%20and%20cd_lote%3D%27{lote}%27",
+        "headers": {
+          "accept": "application/json, text/plain, */*",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+      },
+      "slots": [
+        {
+          "param": "setor",
+          "at": [
+            "query:CQL_FILTER"
+          ],
+          "template": "cd_setor_fiscal='{setor}' and cd_quadra_fiscal='{quadra}' and cd_lote='{lote}'"
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:patrimonio_cultural_bem_tombado&outputFormat=application/json&CQL_FILTER=cd_setor_fiscal%3D%27{setor}%27%20and%20cd_quadra_fiscal%3D%27{quadra}%27%20and%20cd_lote%3D%27{lote}%27"
+      },
+      "match": {
+        "method": "GET",
+        "host": "wfs.geosampa.prefeitura.sp.gov.br",
+        "path": "/geoserver/geoportal/wfs"
+      },
+      "response": {
+        "format": "json",
+        "extract": "features",
+        "pick": [
+          "id",
+          "nome=properties.nm_area_tombada",
+          "resolucaoConpresp=properties.tx_resolucao_conpresp",
+          "resolucaoCondephaat=properties.tx_resolucao_condephaat",
+          "resolucaoIphan=properties.tx_resolucao_iphan",
+          "zepec=properties.tx_zepec",
+          "nivelTombamento=properties.tx_nivel_tombamento",
+          "linkResolucao=properties.tx_link_resolucao",
+          "observacao=properties.tx_observacao_complementar"
+        ]
+      },
+      "params": [
+        {
+          "name": "setor",
+          "type": "string",
+          "required": true,
+          "description": "Código do setor fiscal com 3 dígitos (ex: 015).",
+          "example": "015"
+        },
+        {
+          "name": "quadra",
+          "type": "string",
+          "required": true,
+          "description": "Código da quadra fiscal com 3 dígitos (ex: 013).",
+          "example": "013"
+        },
+        {
+          "name": "lote",
+          "type": "string",
+          "required": true,
+          "description": "Código do lote fiscal com 4 dígitos (ex: 0008).",
+          "example": "0008"
+        }
+      ],
+      "readOnly": true,
+      "minTier": 1,
+      "learnedLoggedIn": false,
+      "checks": [
+        {
+          "args": {
+            "setor": "015",
+            "quadra": "013",
+            "lote": "0008"
+          },
+          "expect": "result",
+          "purpose": "Lote tombado da Vila Cerqueira César retorna resolução CONPRESP."
+        },
+        {
+          "args": {
+            "setor": "999",
+            "quadra": "999",
+            "lote": "9999"
+          },
+          "expect": "empty",
+          "purpose": "SQL sem tombamento retorna vazio."
+        }
+      ]
+    },
+    {
+      "name": "getEnvoltoriaTombamento",
+      "description": "Verifica se o bounding box incide em área envoltória de bem tombado do CONPRESP.",
+      "request": {
+        "method": "GET",
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:patrimonio_cultural_area_envoltoria_CONPRESP&outputFormat=application/json&bbox=%7Bminx%7D%2C%7Bminy%7D%2C%7Bmaxx%7D%2C%7Bmaxy%7D",
+        "headers": {
+          "accept": "application/json, text/plain, */*",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+      },
+      "slots": [
+        {
+          "param": "minx",
+          "at": [
+            "query:bbox"
+          ],
+          "template": "{minx},{miny},{maxx},{maxy}"
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:patrimonio_cultural_area_envoltoria_CONPRESP&outputFormat=application/json&bbox=%7Bminx%7D%2C%7Bminy%7D%2C%7Bmaxx%7D%2C%7Bmaxy%7D"
+      },
+      "match": {
+        "method": "GET",
+        "host": "wfs.geosampa.prefeitura.sp.gov.br",
+        "path": "/geoserver/geoportal/wfs"
+      },
+      "response": {
+        "format": "json",
+        "extract": "features",
+        "pick": [
+          "id",
+          "nome=properties.nm_area",
+          "resolucao=properties.tx_resolucao_conpresp",
+          "linkResolucao=properties.tx_link_resolucao"
+        ]
+      },
+      "params": [
+        {
+          "name": "minx",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada X mínima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "324000"
+        },
+        {
+          "name": "miny",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada Y mínima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "7393000"
+        },
+        {
+          "name": "maxx",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada X máxima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "325000"
+        },
+        {
+          "name": "maxy",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada Y máxima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "7394000"
+        }
+      ],
+      "readOnly": true,
+      "minTier": 1,
+      "learnedLoggedIn": false,
+      "checks": [
+        {
+          "args": {
+            "minx": "324000",
+            "miny": "7393000",
+            "maxx": "325000",
+            "maxy": "7394000"
+          },
+          "expect": "result",
+          "purpose": "Área de envoltória histórica retorna resolução correspondente."
+        },
+        {
+          "args": {
+            "minx": "100000",
+            "miny": "1000000",
+            "maxx": "100010",
+            "maxy": "1000010"
+          },
+          "expect": "empty",
+          "purpose": "BBOX fora do município retorna vazio."
+        }
+      ]
+    },
+    {
+      "name": "getAreasContaminadas",
+      "description": "Consulta áreas contaminadas, em monitoramento ou reabilitadas cadastradas pela SVMA/PMSP no bounding box.",
+      "request": {
+        "method": "GET",
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:area_contaminada_reabilitada_svma&outputFormat=application/json&bbox=%7Bminx%7D%2C%7Bminy%7D%2C%7Bmaxx%7D%2C%7Bmaxy%7D",
+        "headers": {
+          "accept": "application/json, text/plain, */*",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+      },
+      "slots": [
+        {
+          "param": "minx",
+          "at": [
+            "query:bbox"
+          ],
+          "template": "{minx},{miny},{maxx},{maxy}"
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:area_contaminada_reabilitada_svma&outputFormat=application/json&bbox=%7Bminx%7D%2C%7Bminy%7D%2C%7Bmaxx%7D%2C%7Bmaxy%7D"
+      },
+      "match": {
+        "method": "GET",
+        "host": "wfs.geosampa.prefeitura.sp.gov.br",
+        "path": "/geoserver/geoportal/wfs"
+      },
+      "response": {
+        "format": "json",
+        "extract": "features",
+        "pick": [
+          "id",
+          "endereco=properties.tx_endereco_area_contaminada",
+          "classificacao=properties.dc_classificacao_area_contaminada",
+          "contaminante=properties.tx_contaminante",
+          "usoAnterior=properties.dc_uso_anterior_geral",
+          "usoPretendido=properties.dc_uso_pretendido_geral",
+          "restricao=properties.tx_restricao"
+        ]
+      },
+      "params": [
+        {
+          "name": "minx",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada X mínima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "325000"
+        },
+        {
+          "name": "miny",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada Y mínima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "7380000"
+        },
+        {
+          "name": "maxx",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada X máxima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "335000"
+        },
+        {
+          "name": "maxy",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada Y máxima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "7390000"
+        }
+      ],
+      "readOnly": true,
+      "minTier": 1,
+      "learnedLoggedIn": false,
+      "checks": [
+        {
+          "args": {
+            "minx": "325000",
+            "miny": "7380000",
+            "maxx": "335000",
+            "maxy": "7390000"
+          },
+          "expect": "result",
+          "purpose": "Região com áreas registradas no cadastro SVMA retorna ocorrências."
+        },
+        {
+          "args": {
+            "minx": "100000",
+            "miny": "1000000",
+            "maxx": "100010",
+            "maxy": "1000010"
+          },
+          "expect": "empty",
+          "purpose": "BBOX fora do município retorna vazio."
+        }
+      ]
+    },
+    {
+      "name": "getRiscosGeologicos",
+      "description": "Consulta setores de risco geológico mapeados (escorregamento, erosão, solapamento) no bounding box.",
+      "request": {
+        "method": "GET",
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:area_risco_geologico&outputFormat=application/json&bbox=%7Bminx%7D%2C%7Bminy%7D%2C%7Bmaxx%7D%2C%7Bmaxy%7D",
+        "headers": {
+          "accept": "application/json, text/plain, */*",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+      },
+      "slots": [
+        {
+          "param": "minx",
+          "at": [
+            "query:bbox"
+          ],
+          "template": "{minx},{miny},{maxx},{maxy}"
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=geoportal:area_risco_geologico&outputFormat=application/json&bbox=%7Bminx%7D%2C%7Bminy%7D%2C%7Bmaxx%7D%2C%7Bmaxy%7D"
+      },
+      "match": {
+        "method": "GET",
+        "host": "wfs.geosampa.prefeitura.sp.gov.br",
+        "path": "/geoserver/geoportal/wfs"
+      },
+      "response": {
+        "format": "json",
+        "extract": "features",
+        "pick": [
+          "id",
+          "nome=properties.nm_area_risco",
+          "grauRisco=properties.tx_grau_de_risco_geologico",
+          "tipoProcesso=properties.tx_tipo_processo_geologico",
+          "moradias=properties.qt_moradia",
+          "atualizacao=properties.dt_atualizacao"
+        ]
+      },
+      "params": [
+        {
+          "name": "minx",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada X mínima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "330000"
+        },
+        {
+          "name": "miny",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada Y mínima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "7365000"
+        },
+        {
+          "name": "maxx",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada X máxima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "340000"
+        },
+        {
+          "name": "maxy",
+          "type": "string",
+          "required": true,
+          "description": "Coordenada Y máxima em SIRGAS 2000 / UTM 23S (EPSG:31983).",
+          "example": "7375000"
+        }
+      ],
+      "readOnly": true,
+      "minTier": 1,
+      "learnedLoggedIn": false,
+      "checks": [
+        {
+          "args": {
+            "minx": "330000",
+            "miny": "7365000",
+            "maxx": "340000",
+            "maxy": "7375000"
+          },
+          "expect": "result",
+          "purpose": "Região com mapeamento de encosta retorna setores de risco geológico."
+        },
+        {
+          "args": {
+            "minx": "100000",
+            "miny": "1000000",
+            "maxx": "100010",
+            "maxy": "1000010"
+          },
+          "expect": "empty",
+          "purpose": "BBOX fora do município retorna vazio."
+        }
+      ]
+    },
+    {
+      "name": "queryLayer",
+      "description": "Executa consulta WFS genérica em qualquer camada cadastral/temática do GeoSampa com filtro CQL.",
+      "request": {
+        "method": "GET",
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=%7BtypeName%7D&outputFormat=application/json&maxFeatures=%7BmaxFeatures%7D&CQL_FILTER=%7BcqlFilter%7D",
+        "headers": {
+          "accept": "application/json, text/plain, */*",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+      },
+      "slots": [
+        {
+          "param": "typeName",
+          "at": [
+            "query:typeName"
+          ]
+        },
+        {
+          "param": "maxFeatures",
+          "at": [
+            "query:maxFeatures"
+          ]
+        },
+        {
+          "param": "cqlFilter",
+          "at": [
+            "query:CQL_FILTER"
+          ]
+        }
+      ],
+      "volatile": [],
+      "trigger": {
+        "url": "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/geoportal/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName={typeName}&outputFormat=application/json&maxFeatures={maxFeatures}&CQL_FILTER={cqlFilter}"
+      },
+      "match": {
+        "method": "GET",
+        "host": "wfs.geosampa.prefeitura.sp.gov.br",
+        "path": "/geoserver/geoportal/wfs"
+      },
+      "response": {
+        "format": "json",
+        "extract": "features",
+        "pick": [
+          "id",
+          "properties",
+          "geometry"
+        ]
+      },
+      "params": [
+        {
+          "name": "typeName",
+          "type": "string",
+          "required": true,
+          "description": "Nome técnico da camada GeoServer (ex: geoportal:quadra_fiscal).",
+          "example": "geoportal:quadra_fiscal"
+        },
+        {
+          "name": "cqlFilter",
+          "type": "string",
+          "required": true,
+          "description": "Expressão CQL de filtragem (ex: cd_setor_fiscal='009').",
+          "example": "cd_setor_fiscal='009'"
+        },
+        {
+          "name": "maxFeatures",
+          "type": "string",
+          "required": false,
+          "default": "10",
+          "description": "Limite máximo de feições retornadas.",
+          "example": "5"
+        }
+      ],
+      "readOnly": true,
+      "minTier": 1,
+      "learnedLoggedIn": false,
+      "checks": [
+        {
+          "args": {
+            "typeName": "geoportal:quadra_fiscal",
+            "cqlFilter": "cd_setor_fiscal='009'",
+            "maxFeatures": "2"
+          },
+          "expect": "result",
+          "purpose": "Consulta genérica retorna quadras do setor 009."
+        },
+        {
+          "args": {
+            "typeName": "geoportal:quadra_fiscal",
+            "cqlFilter": "cd_setor_fiscal='999'",
+            "maxFeatures": "2"
+          },
+          "expect": "empty",
+          "purpose": "Filtro sem feições correspondentes retorna vazio."
+        }
+      ]
+    }
+  ]
+}
